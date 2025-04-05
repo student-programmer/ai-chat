@@ -67,11 +67,33 @@ class ChatInterface:
                 st.rerun()
 
         with col2:
-            if st.button("❌", key=f"delete_{chat_id}"):
-                self.chat_dao.delete_chat(chat_id)
-                if st.session_state.current_chat == chat_id:
-                    st.session_state.current_chat = None
+            with st.popover("⚙️"):
+                self._render_chat_management_menu(chat_id, title)
+
+    def _render_chat_management_menu(self, chat_id: int, current_title: str):
+        """Меню управления чатом"""
+        new_title = st.text_input(
+            "Новое название",
+            value=current_title,
+            key=f"rename_{chat_id}"
+        )
+
+        if st.button("Переименовать", key=f"rename_btn_{chat_id}"):
+            if new_title.strip():
+                self.chat_dao.update_chat_title(chat_id, new_title.strip())
                 st.rerun()
+            else:
+                st.error("Название не может быть пустым")
+
+        if st.button("🗑️ Удалить", key=f"delete_{chat_id}"):
+            if st.session_state.current_chat == chat_id:
+                st.session_state.current_chat = None
+            self._delete_chat(chat_id)
+            st.rerun()
+
+    def _delete_chat(self, chat_id: int):
+        """Удаление чата"""
+        self.chat_dao.delete_chat(chat_id)
 
 
     def render_main_interface(self):
@@ -118,14 +140,15 @@ class ChatInterface:
             st.write(content)
             st.caption(timestamp)
 
-    def _render_message_controls(self, role: str, message_id: int,current_topic: str, current_rating: Optional[int]=None):
+    def _render_message_controls(self, role: str, message_id: int, current_topic: str,
+                                 current_rating: Optional[int] = None):
         """Управление сообщением: оценка и тема"""
         if role == 'assistant':
             self._render_rating_control(message_id, current_rating)
         else:
             self._render_topic_control(message_id, current_topic)
 
-    def _render_rating_control(self, message_id: int, current_rating: Optional[int]=None):
+    def _render_rating_control(self, message_id: int, current_rating: Optional[int] = None):
         """Контрол оценки для сообщений ассистента"""
         print(RATING_OPTIONS)
         print(current_rating)
@@ -207,6 +230,7 @@ class ChatInterface:
             'assistant',
             bot_response
         )
+
 
 def main():
     chat_interface = ChatInterface()
