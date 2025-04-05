@@ -33,7 +33,7 @@ class ChatInterface:
 
     def _render_new_chat_button(self):
         """Кнопка создания нового чата"""
-        if st.button("+ Новый чат"):
+        if st.button("Новый чат", use_container_width=True):
             new_chat_id = self.chat_dao.create_chat()
             st.session_state.current_chat = new_chat_id
             st.rerun()
@@ -55,9 +55,24 @@ class ChatInterface:
         # Форматирование отображаемого названия
         display_title = (title[:15] + '...') if len(title) > 18 else title
         button_label = f"{display_title} ({formatted_date})"
-        if st.button(button_label, key=f"chat_{chat_id}", use_container_width=True):
-            st.session_state.current_chat = chat_id
-            st.rerun()
+
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            if st.button(
+                    button_label,
+                    key=f"chat_{chat_id}",
+                    use_container_width=True
+            ):
+                st.session_state.current_chat = chat_id
+                st.rerun()
+
+        with col2:
+            if st.button("❌", key=f"delete_{chat_id}"):
+                self.chat_dao.delete_chat(chat_id)
+                if st.session_state.current_chat == chat_id:
+                    st.session_state.current_chat = None
+                st.rerun()
+
 
     def render_main_interface(self):
         """Отрисовка основного интерфейса чата"""

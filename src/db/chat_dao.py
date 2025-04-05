@@ -23,13 +23,13 @@ class ChatDAO(BaseDAO):
 
     def get_all_chats(self) -> List[Tuple[int, str, str]]:
         cursor = self._execute(
-            'SELECT id, title, created_at FROM chats WHERE deleted = False  ORDER BY created_at DESC')
+            'SELECT id, title, created_at FROM chats WHERE deleted = false  ORDER BY created_at DESC')
         return cursor.fetchall()
 
     def delete_chat(self, chat_id: int):
         self._execute(
             'UPDATE chats SET deleted = ? WHERE id = ?',
-            (False, chat_id))
+            (True, chat_id))
 
     def update_chat_title(self, chat_id: int, new_title: str):
         self._execute(
